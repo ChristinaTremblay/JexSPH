@@ -32,6 +32,12 @@ namespace Jex {
 
 #pragma endregion
 
+#pragma region Float4
+
+
+
+#pragma endregion
+
 #pragma region Vector3f
 
 	class Vector3f {
@@ -115,6 +121,14 @@ namespace Jex {
 	};
 
 #pragma endregion
+
+#pragma region Vector4f
+
+	class Vector4f {
+
+	};
+
+#pragma region
 
 #pragma region InlineFunctions
 

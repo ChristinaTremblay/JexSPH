@@ -95,6 +95,8 @@ GLuint vbo;
 GLuint vertex_position_flag = 0;
 GLuint shader_program;
 
+#define OpenGL_Render
+
 #ifdef VTK_Render
 
 VTK_MODULE_INIT(vtkRenderingOpenGL2); // VTK was built with vtkRenderingOpenGL2  

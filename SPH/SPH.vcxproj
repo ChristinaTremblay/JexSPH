@@ -97,8 +97,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <ExecutablePath>D:\VisualStudio Workspace\SPH\SPH\dll;$(ExecutablePath)</ExecutablePath>
-    <IncludePath>D:\VisualStudio Workspace\SPH\SPH\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\VisualStudio Workspace\SPH\SPH\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\Graduate Materials\Workspace\VisualStudio2015\JexSPH\SPH\include;D:\VisualStudio Workspace\SPH\SPH\include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\Graduate Materials\Workspace\VisualStudio2015\JexSPH\SPH\lib;D:\VisualStudio Workspace\SPH\SPH\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
