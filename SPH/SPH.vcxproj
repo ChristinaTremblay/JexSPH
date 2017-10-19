@@ -37,6 +37,7 @@
     <ClCompile Include="JexPainter.cpp" />
     <ClCompile Include="JexParticleDataStruct.cpp" />
     <ClCompile Include="JexShaderCompiler.cpp" />
+    <ClCompile Include="matrix_test.cpp" />
     <ClCompile Include="render_test.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -102,6 +103,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <ExecutablePath>D:\Graduate Materials\Workspace\VisualStudio2015\JexSPH\SPH;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>D:\Graduate Materials\Workspace\VisualStudio2015\JexSPH\SPH\include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\Graduate Materials\Workspace\VisualStudio2015\JexSPH\SPH\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

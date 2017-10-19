@@ -95,7 +95,7 @@ GLuint vbo;
 GLuint vertex_position_flag = 0;
 GLuint shader_program;
 
-#define OpenGL_Render
+//#define VTK_Render
 
 #ifdef VTK_Render
 
