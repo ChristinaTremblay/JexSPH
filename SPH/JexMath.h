@@ -21,6 +21,9 @@ namespace Jex {
 
 #pragma region Float3
 
+	class Float3;
+	class Vector3f;
+
 	class Float3 {
 	public:
 		float x, y, z;
@@ -45,6 +48,23 @@ namespace Jex {
 		Float4(const Float4 & f4);
 		Float4(const Float4 * f4);
 		~Float4() {}
+
+		Float4 & operator = (const Float4 & f4) {
+			x = f4.x; y = f4.y; z = f4.z; w = f4.w;
+			return *this;
+		}
+
+		Float4 & operator += (const Float4 & f4) {
+			x += f4.x; y += f4.y; z += f4.z; w += f4.w;
+			return *this;
+		}
+
+		Float4 & operator -= (const Float4 & f4) {
+			x -= f4.x; y -= f4.y; z -= f4.z; w -= f4.w;
+			return *this;
+		}
+
+		Vector3f TransforToVector3f() const;
 
 		void print_info() const;
 	};
@@ -100,6 +120,8 @@ namespace Jex {
 			return x * v.X() + y * v.Y() + z * v.Z();
 		}
 
+		Vector3f cross(const Vector3f & v) const;
+
 		float LengthSq() const { return x*x + y*y + z*z; }
 		float Length() const { return sqrt(LengthSq()); }
 
@@ -111,7 +133,7 @@ namespace Jex {
 		}
 
 		// 转换成齐次坐标
-		Float4 TransforToHomoCoord(float w) const;
+		Float4 TransforToHomoCoord(float w = 0.0) const;
 
 		bool operator == (const Vector3f & v) {
 			return x == v.x && y == v.y && z == v.z;
@@ -187,11 +209,15 @@ namespace Jex {
 		Float16 GetData() const;
 		void SetData(int i, float f);
 
+		void SetRowData(int r, const Float4 & f4);
+		void SetColumnData(int c, const Float4 & f4);
+
 		bool operator == (const Matrix4x4f & mtrx);
 		Matrix4x4f & operator = (const Matrix4x4f & mtrx);
 		Matrix4x4f & operator += (const Matrix4x4f & mtrx);
 		Matrix4x4f & operator -= (const Matrix4x4f & mtrx);
 		Matrix4x4f & operator *= (const Matrix4x4f & mtrx);
+		float & operator [] (int i);
 
 		// 计算行列式的值
 		float Det() const;
@@ -310,6 +336,13 @@ namespace Jex {
 		return v4;
 	}
 
+	inline Float4 operator + (const Float4 & f1, const Float4 & f2) {
+		return Float4(f1.x + f2.x, f1.y + f2.y, f1.z + f2.z, f1.w + f2.w);
+	}
+
+	inline Float4 operator - (const Float4 & f1, const Float4 & f2) {
+		return Float4(f1.x - f2.x, f1.y - f2.y, f1.z - f2.z, f1.w - f2.w);
+	}
 
 #pragma endregion
 
@@ -338,119 +371,6 @@ namespace Jex {
 	Matrix4x4f RotateY(float dy, Float4 p, Float4 o = Float4(0.0, 0.0, 0.0, 0.0));
 	Matrix4x4f RotateZ(float dz, Float4 p, Float4 o = Float4(0.0, 0.0, 0.0, 0.0));
 
-	float RadianToDegree(float radian) {
-		return 180.0 * radian / PI;
-	}
-
-	float DegreeToRadian(float degree) {
-		return PI * degree / 180.0;
-	}
-
-	Matrix4x4f Translate(float dx, float dy, float dz) {
-		Matrix4x4f i_mtrx = ProductIdentityMtrx();
-		i_mtrx.SetData(3, dx);
-		i_mtrx.SetData(7, dy);
-		i_mtrx.SetData(11, dz);
-		return i_mtrx;
-	}
-
-	Matrix4x4f TranslateX(float dx) {
-		return Translate(dx, 0.0, 0.0);
-	}
-	
-	Matrix4x4f TranslateY(float dy) {
-		return Translate(0.0, dy, 0.0);
-	}
-
-	Matrix4x4f TranslateZ(float dz) {
-		return Translate(0.0, 0.0, dz);
-	}
-
-	Matrix4x4f Scale(float dx, float dy, float dz, Float4 p, Float4 o) {
-
-		// p 到 o 的平移矩阵
-		Matrix4x4f po_mtrx = Translate(o.x - p.x, o.y - p.y, o.z - p.z);
-
-		// 缩放矩阵
-		Matrix4x4f scale_mtrx = ProductIdentityMtrx();
-		scale_mtrx.SetData(0, dx);
-		scale_mtrx.SetData(5, dy);
-		scale_mtrx.SetData(10, dz);
-		
-		// o 到 p 的平移矩阵
-		Matrix4x4f op_mtrx = Translate(p.x - o.x, p.y - o.y, p.z - o.z);
-
-		return op_mtrx * scale_mtrx * po_mtrx;
-	}
-
-	Matrix4x4f Scale(float ds, Float4 p, Float4 o) {
-		return Scale(ds, ds, ds, p, o);
-	}
-
-	Matrix4x4f ScaleX(float dx, Float4 p, Float4 o) {
-		return Scale(dx, 0.0, 0.0, p, o);
-	}
-
-	Matrix4x4f ScaleY(float dy, Float4 p, Float4 o) {
-		return Scale(0.0, dy, 0.0, p, o);
-	}
-
-	Matrix4x4f ScaleZ(float dz, Float4 p, Float4 o) {
-		return Scale(0.0, 0.0, dz, p, o);
-	}
-
-	Matrix4x4f Rotate(float dx, float dy, float dz, Float4 p, Float4 o) {
-
-		// p 到 o 的平移矩阵
-		Matrix4x4f po_mtrx = Translate(o.x - p.x, o.y - p.y, o.z - p.z);
-
-		// 沿自身 x 轴旋转
-		Matrix4x4f rx_mtrx = ProductIdentityMtrx();
-		if (abs(dx) < EPSILON) {
-			rx_mtrx.SetData(5, cos(DegreeToRadian(dx)));
-			rx_mtrx.SetData(6, -sin(DegreeToRadian(dx)));
-			rx_mtrx.SetData(9, sin(DegreeToRadian(dx)));
-			rx_mtrx.SetData(10, cos(DegreeToRadian(dx)));
-		}
-
-		// 沿自身 y 轴旋转
-		Matrix4x4f ry_mtrx = ProductIdentityMtrx();
-		if (abs(dy) < EPSILON) {
-			ry_mtrx.SetData(0, cos(DegreeToRadian(dy)));
-			ry_mtrx.SetData(2, -sin(DegreeToRadian(dy)));
-			ry_mtrx.SetData(8, sin(DegreeToRadian(dy)));
-			ry_mtrx.SetData(10, cos(DegreeToRadian(dy)));
-		}
-
-		Matrix4x4f rz_mtrx = ProductIdentityMtrx();
-		if (abs(dz) < EPSILON) {
-			rz_mtrx.SetData(0, cos(DegreeToRadian(dz)));
-			rz_mtrx.SetData(1, -sin(DegreeToRadian(dz)));
-			rz_mtrx.SetData(4, sin(DegreeToRadian(dz)));
-			rz_mtrx.SetData(5, cos(DegreeToRadian(dz)));
-		}
-
-		// o 到 p 的平移矩阵
-		Matrix4x4f op_mtrx = Translate(p.x - o.x, p.y - o.y, p.z - o.z);
-
-		return op_mtrx * rz_mtrx * ry_mtrx * rx_mtrx * po_mtrx;
-	}
-
-
-	Matrix4x4f RotateX(float dx, Float4 p, Float4 o) {
-		return Rotate(dx, 0.0, 0.0, p, o);
-	}
-
-
-	Matrix4x4f RotateY(float dy, Float4 p, Float4 o) {
-		return Rotate(0.0, dy, 0.0, p, o);
-	}
-
-
-	Matrix4x4f RotateZ(float dz, Float4 p, Float4 o) {
-		return Rotate(0.0, 0.0, dz, p, o);
-	}
-
 #pragma endregion
 
 #pragma region Typedef
@@ -460,7 +380,5 @@ namespace Jex {
 #pragma endregion
 
 }
-
-
 
 #endif

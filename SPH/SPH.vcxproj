@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="JexCamera.h" />
     <ClInclude Include="JexFluidSystem.h" />
     <ClInclude Include="JexGridContainer.h" />
     <ClInclude Include="JexMath.h" />
@@ -30,6 +31,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Eigen_Test.cpp" />
+    <ClCompile Include="JexCamera.cpp" />
     <ClCompile Include="JexFluidSystem.cpp" />
     <ClCompile Include="JexGridContainer.cpp" />
     <ClCompile Include="JexMath.cpp" />
@@ -37,7 +39,7 @@
     <ClCompile Include="JexPainter.cpp" />
     <ClCompile Include="JexParticleDataStruct.cpp" />
     <ClCompile Include="JexShaderCompiler.cpp" />
-    <ClCompile Include="matrix_test.cpp" />
+    <ClCompile Include="matht.cpp" />
     <ClCompile Include="render_test.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -94,8 +94,11 @@ GLuint vao;
 GLuint vbo;
 GLuint vertex_position_flag = 0;
 GLuint shader_program;
+GLfloat window_width = 0.0;
+GLfloat window_height = 0.0;
 
 //#define VTK_Render
+#define OpenGL_Render
 
 #ifdef VTK_Render
 
@@ -232,6 +235,31 @@ GLvoid InitRenderSystem() {
 
 	glClearColor(0.6, 0.6, 0.6, 1.0);
 
+	// 抗锯齿
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	// 对点进行平滑处理
+	glEnable(GL_POINT_SMOOTH);
+	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+
+	// 对直线进行平滑处理
+	glEnable(GL_LINE_SMOOTH);
+	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+
+	// 对多边形进行平滑处理
+	glEnable(GL_POLYGON_SMOOTH);
+	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+
+	// 平滑颜色插值
+	glShadeModel(GL_SMOOTH);
+
+	// 启用颜色追踪
+	//																		glEnable(GL_COLOR_MATERIAL);
+
+	// 启用深度测试
+	glEnable(GL_DEPTH_TEST);
+		
 }
 
 GLvoid InitDataSystem() {
@@ -284,6 +312,10 @@ GLvoid DisplayFunc() {
 
 GLvoid ReshapeFunc(int w, int h) {
 
+	window_width = (GLfloat)w;
+	window_height = (GLfloat)h;
+
+	glViewport(0, 0, window_width, window_height);
 }
 
 GLvoid IdleFunc() {
