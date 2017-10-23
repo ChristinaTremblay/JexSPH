@@ -7,7 +7,7 @@
 #include <cuda_gl_interop.h>      
 
 #define GET_PROC_ADDRESS(str) wglGetProcAddress(str)      
-#define DIM 512      
+#define DIM 1000
 
 PFNGLBINDBUFFERARBPROC    glBindBuffer = NULL;
 PFNGLDELETEBUFFERSARBPROC glDeleteBuffers = NULL;
@@ -17,25 +17,74 @@ PFNGLBUFFERDATAARBPROC    glBufferData = NULL;
 GLuint bufferObj;
 cudaGraphicsResource *resource;
 
+//#define CUDA_Test
+
 #ifdef CUDA_Test
+
+struct cuComplex {
+
+	float r;
+	float i;
+
+	__device__ cuComplex(float a, float b) :r(a), i(b) {}
+	__device__ float magnitude2() { return r * r + i * i; }
+	__device__ cuComplex operator * (const cuComplex & a) {
+		return cuComplex(r * a.r - i * a.i, i * a.r + r * a.i);
+	}
+	__device__ cuComplex operator + (const cuComplex & a) {
+		return cuComplex(r + a.r, i + a.i);
+	}
+};
+
+__device__ int Julia(int x, int y) {
+
+	const float scale = 1.5;
+	float jx = scale * (float)(DIM / 2 - x) / (DIM / 2);
+	float jy = scale * (float)(DIM / 2 - y) / (DIM / 2);
+
+	cuComplex c(-0.8, 0.156);
+	cuComplex a(jx, jy);
+
+	for (int i = 0; i < 200; i++) {
+		a = a * a + c;
+		if (a.magnitude2() > 1000) return 0;
+	}
+
+	return 1;
+}
 
 __global__ void cudaGLKernel(uchar4 *ptr)
 {
-	int x = threadIdx.x + blockIdx.x * blockDim.x;
-	int y = threadIdx.y + blockIdx.y * blockDim.y;
-	int offset = x + y * blockDim.x * gridDim.x;
+	//int x = threadIdx.x + blockIdx.x * blockDim.x;
+	//int y = threadIdx.y + blockIdx.y * blockDim.y;
+	//int offset = x + y * blockDim.x * gridDim.x;
 
-	/*float fx = x / (float)DIM - 0.5f;
-	float fy = y / (float)DIM - 0.5f;*/
+	///*float fx = x / (float)DIM - 0.5f;
+	//float fy = y / (float)DIM - 0.5f;*/
 
-	unsigned char green = 255 * sinf(x*y);
-	unsigned char red = 255 * cosf(offset*offset);
-	unsigned char blue = 255 * cosf(offset*x*y);
+	//unsigned char green = 255 * sinf(x*y);
+	//unsigned char red = 255 * cosf(offset*offset);
+	//unsigned char blue = 255 * cosf(offset*x*y);
 
-	ptr[offset].x = red;
-	ptr[offset].y = green;
-	ptr[offset].z = blue;
-	ptr[offset].w = 255;
+	//ptr[offset].x = red;
+	//ptr[offset].y = green;	
+	//ptr[offset].z = blue;
+	//ptr[offset].w = 255;
+	
+	int x = blockIdx.x;
+	int y = blockIdx.y;
+	int offset = x + y * gridDim.x;
+	int v = Julia(x, y);
+	printf("%d\n", gridDim.x);
+	unsigned char green = 255 * v;
+	unsigned char red = 0;
+	unsigned char blue = 0;
+	unsigned char w = 255;
+	
+	ptr[offset * 4 + 0].x = green;
+	ptr[offset * 4 + 1].y = red;
+	ptr[offset * 4 + 2].z = blue;
+	ptr[offset * 4 + 3].w = w;
 }
 
 void drawFunc(void)

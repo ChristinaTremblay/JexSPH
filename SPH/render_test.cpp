@@ -35,14 +35,15 @@
 #include "JexGridContainer.h"
 #include "JexNeighorTable.h"
 #include "JexParticleDataStruct.h"
-#include "JexShaderCompiler.h"
+#include "JexShaderManager.h"
+#include "JexCamera.h"
 
 #include <OpenGL\glew.h>
 #include <OpenGL\freeglut.h>
 
 #pragma endregion
 
-#pragma region INCLUDE_VTK_LIB
+#pragma region STATIC_LIB
 
 #pragma comment(lib, "glew32.lib")
 #pragma comment(lib, "freeglutd.lib")
@@ -98,7 +99,8 @@ GLfloat window_width = 0.0;
 GLfloat window_height = 0.0;
 
 //#define VTK_Render
-#define OpenGL_Render
+//#define OpenGL_Render
+#define Camera_Test
 
 #ifdef VTK_Render
 
@@ -255,7 +257,7 @@ GLvoid InitRenderSystem() {
 	glShadeModel(GL_SMOOTH);
 
 	// 启用颜色追踪
-	//																		glEnable(GL_COLOR_MATERIAL);
+	//glEnable(GL_COLOR_MATERIAL);
 
 	// 启用深度测试
 	glEnable(GL_DEPTH_TEST);
@@ -290,9 +292,11 @@ GLvoid InitDataSystem() {
 
 	glEnableVertexAttribArray(vertex_position_flag);
 
-	Jex::ShaderCompiler shader_compiler;
-	shader_program = shader_compiler.Compile();
-	glUseProgram(shader_program);
+	Jex::JexShaderManager shader_mgr;
+	shader_mgr.CompileVertexShader("VertexShader.glsl");
+	shader_mgr.CompileFragmentShader("FragmentShader.glsl");
+	shader_mgr.LinkShaderProgram();
+	shader_mgr.UseShaderProgram();
 
 	glPointSize(3);
 }
@@ -356,6 +360,105 @@ int main(int argc, char ** argv) {
 	glutIdleFunc(IdleFunc);
 	glutMouseFunc(MouseFunc);
 	glutKeyboardFunc(KeyboardFunc);
+
+	glutMainLoop();
+}
+
+#endif
+
+#ifdef Camera_Test
+
+GLint vao[3] = { 0 };
+GLint vbo[3] = { 0 };
+
+float triangle1[3][3] = { 
+	{ 1.0, 1.0, 1.0 },
+	{ 1.0, 0.0, 1.0 },
+	{ 0.0, 0.0, 0.0 }
+};
+float triangle2[3][3] = {
+	{ -1.0, -1.0, 1.0 },
+	{ 1.0, 0.0, -1.0 },
+	{ 0.0, 0.0, 0.0 }
+};
+float triangle3[3][3] = {
+	{ 0.0, 1.0, 0.0 },
+	{ 1.0, 0.0, 1.0 },
+	{ 0.0, 0.0, 0.0 }
+};
+
+float color1[4] = { 1.0, 0.0, 0.0, 1.0 };
+float color2[4] = { 0.0, 1.0, 0.0, 1.0 };
+float color3[4] = { 0.0, 0.0, 1.0, 1.0 };
+
+void init() {
+
+	glClearColor(1.0, 1.0, 1.0, 1.0);
+	glEnable(GL_DEPTH_TEST);
+
+	glGenVertexArrays(3, vao);
+	glGenBuffers(3, vbo);
+
+	glBindVertexArray(vao[0]);
+	glBindBuffer(vbo[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle1) + sizeof(color1), NULL, GL_STATIC_DRAW);
+	glSubBufferData(GL_ARRAY_BUFFER, 0, sizeof(triangle1), triangle1);
+	glSubBufferData(GL_ARRAY_BUFFER, sizeof(triangle1), sizeof(triangle1) + sizeof(color1), color1);
+
+	glBindVertexArray(vao[1]);
+	glBindBuffer(vbo[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle2) + sizeof(color2), NULL, GL_STATIC_DRAW);
+	glSubBufferData(GL_ARRAY_BUFFER, 0, sizeof(triangle2), triangle2);
+	glSubBufferData(GL_ARRAY_BUFFER, sizeof(triangle2), sizeof(triangle2) + sizeof(color2), color2);
+
+	glBindVertexArray(vao[2]);
+	glBindBuffer(vbo[2]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle3) + sizeof(color3), NULL, GL_STATIC_DRAW);
+	glSubBufferData(GL_ARRAY_BUFFER, 0, sizeof(triangle3), triangle3);
+	glSubBufferData(GL_ARRAY_BUFFER, sizeof(triangle3), sizeof(triangle3) + sizeof(color3), color3);
+
+	Jex::JexShaderManager shader_mgr;
+
+}
+
+void display() {
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	for (int i = 0; i < 3; i++) {
+		glBindBuffer(vbo[i]);
+		glDrawBuffer(GL_TRIANGLES, 0, 3);
+	}
+	
+	glutSwapBuffers();
+}
+
+void keyboard(uchr key, int x, int y) {
+	switch (key) {
+	case 033: exit(EXIT_SUCCESS); break;
+	}
+}
+
+void idle() {
+
+}
+
+int main(int argc, char ** argv) {
+
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GL_RGBA);
+	glutInitContextVersion(4, 5);
+	glutInitContextProfile(GLUT_CORE_PROFILE);
+	glutInitWindowSize(800, 600);
+	glutCreateWindow("Camera Test");
+
+	glewInit();
+
+	init();
+
+	glutDisplayFunc(display);
+	glutIdleFunc(idle);
+	glutKeyboardFunc(keyboard);
 
 	glutMainLoop();
 }

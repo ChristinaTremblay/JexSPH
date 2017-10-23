@@ -26,7 +26,7 @@
     <ClInclude Include="JexNeighorTable.h" />
     <ClInclude Include="JexPainter.h" />
     <ClInclude Include="JexParticleDataStruct.h" />
-    <ClInclude Include="JexShaderCompiler.h" />
+    <ClInclude Include="JexShaderManager.h" />
     <ClInclude Include="JexSphInterface.h" />
   </ItemGroup>
   <ItemGroup>
@@ -38,7 +38,7 @@
     <ClCompile Include="JexNeighborTable.cpp" />
     <ClCompile Include="JexPainter.cpp" />
     <ClCompile Include="JexParticleDataStruct.cpp" />
-    <ClCompile Include="JexShaderCompiler.cpp" />
+    <ClCompile Include="JexShaderManager.cpp" />
     <ClCompile Include="matht.cpp" />
     <ClCompile Include="render_test.cpp" />
   </ItemGroup>
