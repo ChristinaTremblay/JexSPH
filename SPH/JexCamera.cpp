@@ -5,6 +5,8 @@ namespace Jex {
 
 	JexCamera::JexCamera() {
 		location = Float4(0.0, 0.0, 0.0, 1.0);
+		focus = Float4(0.0, 0.0, 0.0, 1.0);
+		up = Float4(0.0, 1.0, 0.0, 0.0);
 		view_mtrx = ProductIdentityMtrx();
 		model_mtrx = ProductIdentityMtrx();
 		projection_mtrx = ProductIdentityMtrx();

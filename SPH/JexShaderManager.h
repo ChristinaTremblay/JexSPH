@@ -25,6 +25,7 @@ namespace Jex {
 
 		GLint CompileVertexShader(const char * file_path);
 		GLint CompileFragmentShader(const char * file_path);
+		int Compile();
 		GLint LinkShaderProgram();
 		void UseShaderProgram() const;
 

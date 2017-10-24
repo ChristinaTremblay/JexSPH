@@ -151,6 +151,10 @@ namespace Jex {
 	Float16 Matrix4x4f::GetData() const {
 		return Float16(data);
 	}
+	
+	float * Matrix4x4f::GetDataPtr() const {
+		return (float*)data;
+	}
 
 	void Matrix4x4f::SetData(int i, float f) {
 		if (0 <= i && i < 16) {

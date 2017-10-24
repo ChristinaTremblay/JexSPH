@@ -98,6 +98,7 @@ GLuint shader_program;
 GLfloat window_width = 0.0;
 GLfloat window_height = 0.0;
 
+
 //#define VTK_Render
 //#define OpenGL_Render
 #define Camera_Test
@@ -368,8 +369,29 @@ int main(int argc, char ** argv) {
 
 #ifdef Camera_Test
 
-GLint vao[3] = { 0 };
-GLint vbo[3] = { 0 };
+const int tri_num = 3;
+
+GLuint vaos[tri_num];
+GLuint vbos[tri_num];
+
+GLuint tri_pos1 = 1;
+GLuint tri_pos2 = 2;
+GLuint tri_pos3;
+GLuint tri_color1 = 2;
+GLuint tri_color2;
+GLuint tri_color3;
+
+float triangles[9][3] = {
+	{ 0.5, 0.5, 0.5 },
+	{ 0.5, 0.0, 0.5 },
+	{ 0.0, 0.0, 0.0 },
+	{ -0.5, -0.5, 0.5 },
+	{ 0.5, 0.0, -0.5 },
+	{ 0.0, 0.0, 0.0 },
+	{ 0.0, 0.5, 0.0 },
+	{ 0.5, 0.0, 0.5 },
+	{ 0.0, 0.0, 0.0 }
+};
 
 float triangle1[3][3] = { 
 	{ 1.0, 1.0, 1.0 },
@@ -387,66 +409,178 @@ float triangle3[3][3] = {
 	{ 0.0, 0.0, 0.0 }
 };
 
+float colors[9][4] = {
+	{ 1.0, 0.0, 0.0, 1.0 },
+	{ 1.0, 0.0, 0.0, 1.0 },
+	{ 1.0, 0.0, 0.0, 1.0 },
+	{ 0.0, 1.0, 0.0, 1.0 },
+	{ 0.0, 1.0, 0.0, 1.0 },
+	{ 0.0, 1.0, 0.0, 1.0 },
+	{ 0.0, 0.0, 1.0, 1.0 },
+	{ 0.0, 0.0, 1.0, 1.0 },
+	{ 0.0, 0.0, 1.0, 1.0 }
+};
+
 float color1[4] = { 1.0, 0.0, 0.0, 1.0 };
 float color2[4] = { 0.0, 1.0, 0.0, 1.0 };
 float color3[4] = { 0.0, 0.0, 1.0, 1.0 };
 
+Jex::JexCamera camera;
+
+enum { X = 0, Y = 1, Z = 2};
+int axis = X;
+GLfloat angles[3] = { 0.0, 0.0, 0.0 };
+GLuint theta;
+
+GLint view_mtrx_uniform_index;
+
+GLfloat camera_loc_x = 0.0;
+GLfloat camera_loc_y = 0.0;
+GLfloat camera_loc_z = 0.0;
+
 void init() {
 
 	glClearColor(1.0, 1.0, 1.0, 1.0);
-	glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_DEPTH_TEST);
 
-	glGenVertexArrays(3, vao);
-	glGenBuffers(3, vbo);
+	glGenVertexArrays(tri_num, vaos);
+	glGenBuffers(tri_num, vbos);
 
-	glBindVertexArray(vao[0]);
-	glBindBuffer(vbo[0]);
+	glBindVertexArray(vaos[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbos[0]);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(triangles) + sizeof(colors), NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(triangles), triangles);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(triangles), sizeof(colors), colors);
+
+	/*glBindVertexArray(vaos[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbos[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle1) + sizeof(color1), NULL, GL_STATIC_DRAW);
-	glSubBufferData(GL_ARRAY_BUFFER, 0, sizeof(triangle1), triangle1);
-	glSubBufferData(GL_ARRAY_BUFFER, sizeof(triangle1), sizeof(triangle1) + sizeof(color1), color1);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(triangle1), triangle1);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(triangle1), sizeof(triangle1) + sizeof(color1), color1);
 
-	glBindVertexArray(vao[1]);
-	glBindBuffer(vbo[1]);
+	glBindVertexArray(vaos[1]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbos[1]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle2) + sizeof(color2), NULL, GL_STATIC_DRAW);
-	glSubBufferData(GL_ARRAY_BUFFER, 0, sizeof(triangle2), triangle2);
-	glSubBufferData(GL_ARRAY_BUFFER, sizeof(triangle2), sizeof(triangle2) + sizeof(color2), color2);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(triangle2), triangle2);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(triangle2), sizeof(triangle2) + sizeof(color2), color2);
 
-	glBindVertexArray(vao[2]);
-	glBindBuffer(vbo[2]);
+	glBindVertexArray(vaos[2]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbos[2]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle3) + sizeof(color3), NULL, GL_STATIC_DRAW);
-	glSubBufferData(GL_ARRAY_BUFFER, 0, sizeof(triangle3), triangle3);
-	glSubBufferData(GL_ARRAY_BUFFER, sizeof(triangle3), sizeof(triangle3) + sizeof(color3), color3);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(triangle3), triangle3);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(triangle3), sizeof(triangle3) + sizeof(color3), color3);*/
 
-	Jex::JexShaderManager shader_mgr;
+	Jex::JexShaderManager shader_mgr = Jex::JexShaderManager();
+	//shader_mgr.Compile();
+	shader_mgr.CompileVertexShader("VertexShader2.glsl");
+	shader_mgr.CompileFragmentShader("FragmentShader2.glsl");
+	shader_mgr.LinkShaderProgram();
+	shader_mgr.UseShaderProgram();
 
+	GLuint shader_program = shader_mgr.GetShaderProgram();
+	std::cout << "shader_program : " << shader_program << std::endl;
+
+	theta = glGetUniformLocation(shader_program, "Jexangles");
+	std::cout << "theta : " << glGetUniformLocation(shader_program, "Jexangles") << std::endl;
+
+	//tri_pos1 = glGetAttribLocation(shader_program, "tri_pos1");
+	glEnableVertexAttribArray(tri_pos1);
+	glVertexAttribPointer(tri_pos1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(0));
+	std::cout << "tri_pos1 : " << tri_pos1 << std::endl;
+
+	//tri_color1 = glGetAttribLocation(shader_program, "tri_color1");
+	glEnableVertexAttribArray(tri_color1);
+	glVertexAttribPointer(tri_color1, 4, GL_FLOAT, GL_FALSE, 0, (void*)sizeof(triangles));
+	std::cout << "tri_color1 : " << (int)tri_color1 << std::endl;
+
+	tri_color2 = glGetAttribLocation(shader_program, "tri_color2");
+	std::cout << tri_color2 << std::endl;
+
+	view_mtrx_uniform_index = glGetUniformLocation(shader_program, "view_mtrx");
+
+	camera = Jex::JexCamera();
+
+	glEnable(GL_DEPTH_TEST);
+	/*glEnableVertexAttribArray(tri_pos2);
+	glEnableVertexAttribArray(tri_pos3);
+	glEnableVertexAttribArray(tri_color1);
+	glEnableVertexAttribArray(tri_color2);
+	glEnableVertexAttribArray(tri_color3);*/
+	
 }
 
 void display() {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	camera.MoveTo(camera_loc_x, camera_loc_y, camera_loc_z);
+	camera.CalculateViewMtrx();
+	Jex::Mtx4f view_mtrx = camera.GetViewMtrx();
+	view_mtrx.print_info();
+	glUniformMatrix4fv(view_mtrx_uniform_index, 1, GL_TRUE, view_mtrx.GetDataPtr());
 
-	for (int i = 0; i < 3; i++) {
-		glBindBuffer(vbo[i]);
-		glDrawBuffer(GL_TRIANGLES, 0, 3);
-	}
+	glUniform3fv(theta, 1, angles);
+	glBindVertexArray(vaos[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbos[0]);
+	glDrawArrays(GL_TRIANGLES, 0, 9);
 	
 	glutSwapBuffers();
 }
 
 void keyboard(uchr key, int x, int y) {
+	printf("%c\n", key);
 	switch (key) {
 	case 033: exit(EXIT_SUCCESS); break;
+	case 'a':
+		camera_loc_x += 0.1;
+		glutPostRedisplay();
+		break;
+	case 'd':
+		camera_loc_x -= 0.1;
+		glutPostRedisplay();
+		break;
+	case 'w':
+		camera_loc_z += 0.1;
+		glutPostRedisplay();
+		break;
+	case 's':
+		camera_loc_z -= 0.1;
+		glutPostRedisplay();
+		break;
+	case 'q':
+		camera_loc_y += 0.1;
+		glutPostRedisplay();
+		break;
+	case 'e':
+		camera_loc_y -= 0.1;
+		glutPostRedisplay();
+		break;
+	}
+}
+
+void mouse(int button, int state, int x, int y) {
+	if (state == GLUT_DOWN) {
+		switch (button) {
+		case GLUT_LEFT_BUTTON: axis = X; break;
+		case GLUT_MIDDLE_BUTTON: axis = Y; break;
+		case GLUT_RIGHT_BUTTON: axis = Z; break;
+		}
 	}
 }
 
 void idle() {
-
+	angles[axis] += 0.1;
+	if (angles[axis] > 360.0) {
+		angles[axis] -= 360.0;
+	}
+	glutPostRedisplay();
 }
 
 int main(int argc, char ** argv) {
 
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GL_RGBA);
+	glutInitDisplayMode(GLUT_RGBA);
 	glutInitContextVersion(4, 5);
 	glutInitContextProfile(GLUT_CORE_PROFILE);
 	glutInitWindowSize(800, 600);
@@ -457,7 +591,8 @@ int main(int argc, char ** argv) {
 	init();
 
 	glutDisplayFunc(display);
-	glutIdleFunc(idle);
+	//glutIdleFunc(idle);
+	glutMouseFunc(mouse);
 	glutKeyboardFunc(keyboard);
 
 	glutMainLoop();

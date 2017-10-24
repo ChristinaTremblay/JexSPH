@@ -207,6 +207,7 @@ namespace Jex {
 
 		float GetData(int i) const;
 		Float16 GetData() const;
+		float * GetDataPtr() const;
 		void SetData(int i, float f);
 
 		void SetRowData(int r, const Float4 & f4);
