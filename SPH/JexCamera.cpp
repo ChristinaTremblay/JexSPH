@@ -74,12 +74,14 @@ namespace Jex {
 			// nothing change
 		}
 		else {
-			projection_mtrx.SetData(0, 2.0 / dx);
-			projection_mtrx.SetData(3, -(left + right) / dx);
-			projection_mtrx.SetData(5, 2.0 / dy);
-			projection_mtrx.SetData(7, -(top + bottom) / dy);
-			projection_mtrx.SetData(10, -2.0 / dz);
-			projection_mtrx.SetData(11, -(far + near) / dz);
+			projection_mtrx.SetData(0, 2.0 * near / dx);
+			projection_mtrx.SetData(3, (left + right) / dx);
+			projection_mtrx.SetData(5, 2.0 * near / dy);
+			projection_mtrx.SetData(6, (top + bottom) / dy);
+			projection_mtrx.SetData(10, -(far + near) / dz);
+			projection_mtrx.SetData(11, - 2 * far * near / dz);
+			projection_mtrx.SetData(14, -1.0);
+			projection_mtrx.SetData(15, 0.0);
 		}
 
 		return projection_mtrx;

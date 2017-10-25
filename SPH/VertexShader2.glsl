@@ -30,6 +30,7 @@ void main() {
 
 	//gl_Position = rx * ry * rz * tri_pos1;
 	gl_Position =  proj_mtrx * view_mtrx * tri_pos1;
+	//gl_Position = proj_mtrx * view_mtrx * tri_pos1 / tri_pos1.w;
 	vs_out_color = tri_color1;
 
 }

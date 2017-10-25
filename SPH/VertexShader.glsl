@@ -1,10 +1,11 @@
 #version 450 core
 
 in vec4 vPosition;
+uniform mat4 view_mtrx;
+uniform mat4 proj_mtrx;
 
 void main() {
-	vec4 pos = vPosition;
-	if (pos.z > 1.0) pos.z = 0.0;
-	gl_Position = pos;
 	
+	gl_Position = proj_mtrx * view_mtrx * vPosition;
+
 }

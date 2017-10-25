@@ -88,6 +88,7 @@
 #define PARTICLE_NUM 4096 * 2
 
 Jex::JexFluidSystem * jex_system;
+Jex::JexCamera * camera;
 GLfloat ptc_pos[PARTICLE_NUM][3];
 
 GLuint frame_count = 0;
@@ -98,10 +99,9 @@ GLuint shader_program;
 GLfloat window_width = 0.0;
 GLfloat window_height = 0.0;
 
-
 //#define VTK_Render
-//#define OpenGL_Render
-#define Camera_Test
+#define OpenGL_Render
+//#define Camera_Test
 
 #ifdef VTK_Render
 
@@ -236,34 +236,53 @@ GLvoid InitRenderSystem() {
 
 	glewInit();
 
-	glClearColor(0.6, 0.6, 0.6, 1.0);
+	glClearColor(1.0, 1.0, 1.0, 1.0);
 
-	// 抗锯齿
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//// 抗锯齿
+	//glEnable(GL_BLEND);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	// 对点进行平滑处理
-	glEnable(GL_POINT_SMOOTH);
-	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+	//// 对点进行平滑处理
+	//glEnable(GL_POINT_SMOOTH);
+	//glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 
-	// 对直线进行平滑处理
-	glEnable(GL_LINE_SMOOTH);
-	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+	//// 对直线进行平滑处理
+	//glEnable(GL_LINE_SMOOTH);
+	//glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 
-	// 对多边形进行平滑处理
-	glEnable(GL_POLYGON_SMOOTH);
-	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+	//// 对多边形进行平滑处理
+	//glEnable(GL_POLYGON_SMOOTH);
+	//glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 
-	// 平滑颜色插值
-	glShadeModel(GL_SMOOTH);
+	//// 平滑颜色插值
+	//glShadeModel(GL_SMOOTH);
 
-	// 启用颜色追踪
-	//glEnable(GL_COLOR_MATERIAL);
+	//// 启用颜色追踪
+	////glEnable(GL_COLOR_MATERIAL);
 
-	// 启用深度测试
-	glEnable(GL_DEPTH_TEST);
+	//// 启用深度测试
+	//glEnable(GL_DEPTH_TEST);
 		
 }
+
+GLfloat eye_x = 80.0, eye_y = 80.0, eye_z = 80.0;
+Jex::Float4 eye(eye_x, eye_y, eye_z, 1.0);
+
+GLfloat at_x = 0.0, at_y = 0.0, at_z = 0.0;
+Jex::Float4 at(at_x, at_y, at_z, 1.0);
+
+GLfloat up_x = 0.0, up_y = 1.0, up_z = 0.0;
+Jex::Float4 up(up_x, up_y, up_z, 0.0);
+
+GLfloat left_ = -55.0;
+GLfloat buttom_ = -55.0;
+GLfloat near_ = -55.0;
+GLfloat right_ = 55.0;
+GLfloat up_ = 55.0;
+GLfloat far_ = 55.0;
+
+GLint view_mtrx_uniform_index;
+GLint proj_mtrx_uniform_index;
 
 GLvoid InitDataSystem() {
 
@@ -290,7 +309,9 @@ GLvoid InitDataSystem() {
 	glBindVertexArray(vao);
 
 	glCreateBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
+	glVertexAttribPointer(vertex_position_flag, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 	glEnableVertexAttribArray(vertex_position_flag);
 
 	Jex::JexShaderManager shader_mgr;
@@ -299,7 +320,21 @@ GLvoid InitDataSystem() {
 	shader_mgr.LinkShaderProgram();
 	shader_mgr.UseShaderProgram();
 
+	GLint shader_program = shader_mgr.GetShaderProgram();
+
+	view_mtrx_uniform_index = glGetUniformLocation(shader_program, "view_mtrx");
+	proj_mtrx_uniform_index = glGetUniformLocation(shader_program, "proj_mtrx");
+
 	glPointSize(3);
+
+	camera = new Jex::JexCamera();
+
+	Jex::Mtx4f view_mtrx = camera->LookAt(eye, at, up);
+	Jex::Mtx4f proj_mtrx = camera->Ortho(Jex::Float3(left_, buttom_, near_), Jex::Float3(right_, up_, far_));
+
+	glUniformMatrix4fv(view_mtrx_uniform_index, 1, GL_TRUE, view_mtrx.GetDataPtr());
+	glUniformMatrix4fv(proj_mtrx_uniform_index, 1, GL_TRUE, proj_mtrx.GetDataPtr());
+
 }
 
 GLvoid DisplayFunc() {
@@ -309,9 +344,8 @@ GLvoid DisplayFunc() {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(ptc_pos), ptc_pos, GL_DYNAMIC_DRAW);
 
-	glVertexAttribPointer(vertex_position_flag, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
 	glDrawArrays(GL_POINTS, 0, PARTICLE_NUM);
+
 	glutSwapBuffers();
 }
 
@@ -502,6 +536,7 @@ void init() {
 	printf("view_mtrx_uniform_index : %d\n", view_mtrx_uniform_index);
 
 	proj_mtrx_uniform_index = glGetUniformLocation(shader_program, "proj_mtrx");
+	printf("proj_mtrx_uniform_index : %d\n", proj_mtrx_uniform_index);
 
 	camera = Jex::JexCamera();
 
@@ -524,9 +559,10 @@ void display() {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	Jex::Float3 lbn = Jex::Float3(-2.0, -2.0, -2.0);
-	Jex::Float3 rtf = Jex::Float3(2.0, 2.0, 2.0);
+	Jex::Float3 lbn = Jex::Float3(-2.0, -2.0, -1.5);
+	Jex::Float3 rtf = Jex::Float3(2.0, 2.0, 1.5);
 	Jex::Mtx4f proj_mtrx = camera.Ortho(lbn, rtf);
+	//proj_mtrx = camera.Frustum(lbn, rtf);
 	glUniformMatrix4fv(proj_mtrx_uniform_index, 1, GL_TRUE, proj_mtrx.GetDataPtr());
 
 	eye = Jex::Float4(camera_loc_x, camera_loc_y, camera_loc_z, 1.0);
