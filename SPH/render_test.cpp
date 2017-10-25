@@ -433,6 +433,7 @@ GLfloat angles[3] = { 0.0, 0.0, 0.0 };
 GLuint theta;
 
 GLint view_mtrx_uniform_index;
+GLint proj_mtrx_uniform_index;
 
 GLfloat camera_loc_x = 0.0;
 GLfloat camera_loc_y = 0.0;
@@ -498,6 +499,9 @@ void init() {
 	std::cout << tri_color2 << std::endl;
 
 	view_mtrx_uniform_index = glGetUniformLocation(shader_program, "view_mtrx");
+	printf("view_mtrx_uniform_index : %d\n", view_mtrx_uniform_index);
+
+	proj_mtrx_uniform_index = glGetUniformLocation(shader_program, "proj_mtrx");
 
 	camera = Jex::JexCamera();
 
@@ -510,14 +514,26 @@ void init() {
 	
 }
 
+Jex::Float4 eye(0.0, 0.0, 0.0, 1.0);
+Jex::Float4 at(0.0, 0.0, -1.0, 1.0);
+Jex::Float4 up(0.0, 0.0, 1.0, 0.0);
+
+GLfloat at_x = 0.0, at_y = 0.0, at_z = 0.0;
+
 void display() {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	camera.MoveTo(camera_loc_x, camera_loc_y, camera_loc_z);
-	camera.CalculateViewMtrx();
-	Jex::Mtx4f view_mtrx = camera.GetViewMtrx();
-	view_mtrx.print_info();
+	Jex::Float3 lbn = Jex::Float3(-2.0, -2.0, -2.0);
+	Jex::Float3 rtf = Jex::Float3(2.0, 2.0, 2.0);
+	Jex::Mtx4f proj_mtrx = camera.Ortho(lbn, rtf);
+	glUniformMatrix4fv(proj_mtrx_uniform_index, 1, GL_TRUE, proj_mtrx.GetDataPtr());
+
+	eye = Jex::Float4(camera_loc_x, camera_loc_y, camera_loc_z, 1.0);
+	at = Jex::Float4(at_x, at_y, at_z, 1.0);
+
+	Jex::Mtx4f view_mtrx = camera.LookAt(eye, at, up);
+	
 	glUniformMatrix4fv(view_mtrx_uniform_index, 1, GL_TRUE, view_mtrx.GetDataPtr());
 
 	glUniform3fv(theta, 1, angles);
@@ -532,31 +548,20 @@ void keyboard(uchr key, int x, int y) {
 	printf("%c\n", key);
 	switch (key) {
 	case 033: exit(EXIT_SUCCESS); break;
-	case 'a':
-		camera_loc_x += 0.1;
-		glutPostRedisplay();
-		break;
-	case 'd':
-		camera_loc_x -= 0.1;
-		glutPostRedisplay();
-		break;
-	case 'w':
-		camera_loc_z += 0.1;
-		glutPostRedisplay();
-		break;
-	case 's':
-		camera_loc_z -= 0.1;
-		glutPostRedisplay();
-		break;
-	case 'q':
-		camera_loc_y += 0.1;
-		glutPostRedisplay();
-		break;
-	case 'e':
-		camera_loc_y -= 0.1;
-		glutPostRedisplay();
-		break;
+	case 'a': camera_loc_x += 0.1; break;
+	case 'd': camera_loc_x -= 0.1; break;
+	case 'w': camera_loc_z += 1.0; break;
+	case 's': camera_loc_z -= 1.0; break;
+	case 'q': camera_loc_y += 0.1; break;
+	case 'e': camera_loc_y -= 0.1; break;
+	case 'f': at_x += 0.1; break;
+	case 'h': at_x -= 0.1; break;
+	case 't': at_z += 0.1; break;
+	case 'g': at_z -= 0.1; break;
+	case 'r': at_y += 0.1; break;
+	case 'y': at_y -= 0.1; break;
 	}
+	glutPostRedisplay();
 }
 
 void mouse(int button, int state, int x, int y) {

@@ -5,6 +5,7 @@ layout(location = 2) in vec4 tri_color1;
 out vec4 vs_out_color;
 uniform vec3 Jexangles;
 uniform mat4 view_mtrx;
+uniform mat4 proj_mtrx;
 
 void main() {
 
@@ -27,7 +28,8 @@ void main() {
 		0.0, 0.0, 1.0, 0.0,
 		0.0, 0.0, 0.0, 1.0);
 
-	gl_Position = view_mtrx * tri_pos1;
+	//gl_Position = rx * ry * rz * tri_pos1;
+	gl_Position =  proj_mtrx * view_mtrx * tri_pos1;
 	vs_out_color = tri_color1;
 
 }

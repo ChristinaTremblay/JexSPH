@@ -15,13 +15,17 @@ namespace Jex {
 		Mtx4f view_mtrx;
 		Mtx4f model_mtrx;
 		Mtx4f projection_mtrx;
+
+		Float4 eye;
+		Float4 at;
+
 	public:
 		JexCamera();
 		JexCamera(const JexCamera & camera);	
 		~JexCamera();
 		
-		void Ortho(const Float3 & lbn, const Float3 & rtf);
-		void Frustum();
+		Mtx4f Ortho(const Float3 & lbn, const Float3 & rtf);
+		Mtx4f Frustum(const Float3 & lbn, const Float3 & rtf);
 
 		void MoveTo(const Float4 & location_);
 		void MoveTo(float x_, float y_, float z_);
@@ -31,6 +35,7 @@ namespace Jex {
 
 		void LookAt(const Float4 & focus_);
 		void LookAt(float x_, float y_, float z_);
+		Mtx4f LookAt(const Float4 & eye_, const Float4 & at_, const Float4 & up_);
 
 		void RotateUp(const Float4 & up_);
 		void RotateUp(float x_, float y_, float z_);

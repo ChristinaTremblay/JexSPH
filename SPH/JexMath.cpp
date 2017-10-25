@@ -105,7 +105,7 @@ namespace Jex {
 
 	Vector3f Vector3f::cross(const Vector3f & v) const {
 		return Vector3f(y * v.Z() - z * v.Y(),
-			x * v.Z() - z * v.X(),
+			z * v.X() - x * v.Z(),
 			x * v.Y() - y * v.X());
 	}
 
@@ -163,7 +163,7 @@ namespace Jex {
 	}
 
 	void Matrix4x4f::SetRowData(int r, const Float4 & f4) {
-		if (0 <= r && r < 4) {
+		if (r == 0 || r == 4 || r == 8 || r == 12) {
 			data[r] = f4.x;
 			data[r + 1] = f4.y;
 			data[r + 2] = f4.z;
